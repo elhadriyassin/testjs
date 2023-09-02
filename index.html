@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>CRUDS</title>
+    <link rel="stylesheet" href="style_cruds.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="head">
+            <h2>cruds</h2>
+            <p>product management system</p>
+        </div>
+
+        <div class="parent">
+            <input type="text" id="title" placeholder="Title">
+            <div class="prix">
+                <input type="number" id="price" placeholder="price" onkeyup="getTotal()">
+                <input type="number" id="taxes" placeholder="taxes" onkeyup="getTotal()">
+                <input type="number" id="ads" placeholder="ads" onkeyup="getTotal()">
+                <input type="number" id="discount" placeholder="disc" onkeyup="getTotal()">
+                <small id="total"> 0 </small>
+
+            </div>
+            <input type="number" id="count" placeholder="count">
+            <input type="text" id="category" placeholder="category">
+            <button id="btn"> Create</button>
+
+        </div>
+
+        <div class="output">
+            <input type="search" readonly id="search" placeholder="Search" onkeyup="rechercher(this.value)">
+            <button id="btn1" onclick="search(this.id)"> Search By Title</button>
+            <button id="btn2" onclick="search(this.id)"> Search By Category</button>
+            <button id="btn3"> Delete All </button>
+
+
+
+            <table>
+
+                <thead>
+                    <th>id</th>
+                    <th>title</th>
+                    <th>price</th>
+                    <th>taxes</th>
+                    <th>ads</th>
+                    <th>discount</th>
+                    <th>total</th>
+                    <th>catgory</th>
+                    <th>button</th>
+                    <th>delete</th>
+                </thead>
+                <tbody id="tbody">
+
+                </tbody>
+
+
+            </table>
+        </div>
+    </div>
+
+</body>
+
+<script>
+
+    //variable
+
+    let title = document.getElementById("title");
+    let price = document.getElementById("price");
+    let taxes = document.getElementById("taxes");
+    let ads = document.getElementById("ads");
+    let discount = document.getElementById("discount");
+    let total = document.getElementById("total");
+    let count = document.getElementById("count");
+    let category = document.getElementById("category");
+    let submit = document.getElementById("btn");
+    let tbody = document.getElementById("tbody");
+    let delall = document.getElementById("btn3");
+    let create = document.getElementById("btn");
+    let s = document.getElementById("search");
+
+    let lists;
+    let etat = "Create";
+    let moder;
+    let temp;
+
+
+    if (localStorage.product != null) {
+        lists = JSON.parse(localStorage.product) //convertir string en un objet
+
+    }
+    else {
+        lists = []
+
+    }
+
+
+    afficherDate()
+    var i;
+    //calculer Total
+    function getTotal() {
+        if (price.value != '') {
+            let res = (+price.value + +taxes.value + +ads.value) - +discount.value;
+            total.innerHTML = res;
+            total.style.background = "purple"
+        }
+        else {
+            total.innerHTML = "";
+            total.style.background = 'rgb(255, 215, 0, .3)';
+        }
+    }
+    //creer product
+    submit.onclick = function () 
+    {
+
+        let produit = {
+            title: title.value,
+            price: price.value,
+            taxes: taxes.value,
+            ads: ads.value,
+            discount: discount.value,
+            total: total.innerHTML,
+            count: count.value,
+            category: category.value
+        }
+        
+            
+        if (title.value!="" && price.value!=""  && category.value!="")
+        {
+            
+            switch (etat) 
+            {
+                case 'Create':
+                
+                    if (count.value > 1) 
+                    {
+                        for (let i = 0; i < count.value; i++) 
+                        {
+                            lists.push(produit);
+                        }
+                    }
+                break;
+                case 'update':
+                    alert("Operation Bien Réussie")
+                    lists[temp] = produit;
+                    create.innerHTML = "Create"
+                    count.style.display = "block"
+                    etat = "Create"
+
+            }
+            localStorage.setItem('product', JSON.stringify(lists))
+            effacerInputs()
+            afficherDate()
+        }
+        else
+        {
+            alert("Veuillez Remplir ts les champs!!!!")
+        }
+        
+
+
+
+        
+    }
+
+
+    //effacer inputs
+    function effacerInputs() {
+        title.value = ''
+        price.value = ''
+        taxes.value = ''
+        ads.value = ''
+        discount.value = ''
+        total.innerHTML = ''
+        count.value = ''
+        category.value = ''
+    }
+
+    //lire donner
+    function afficherDate() {
+        let table = ""
+
+        for (i = 0; i < lists.length; i++) {
+            table += `
+            <tr>
+                    <td>${i + 1}</td>
+                    <td>${lists[i].title}</td>
+                    <td>${lists[i].price}</td>
+                    <td>${lists[i].taxes}</td>
+                    <td>${lists[i].ads}</td>
+                    <td>${lists[i].discount}</td>
+                    <td>${lists[i].total}</td>
+                    <td>${lists[i].count}</td>
+                    <td>${lists[i].category}</td>
+                    <td><button onclick="modifier(${i})" id="up">Update</button></td>
+                    <td><button onclick="effacer( ${i} )" id="del">Delete</button></td>
+            </tr>
+
+            `
+        }
+        tbody.innerHTML = table
+
+        if (lists.length > 0) {
+            delall.style.display = "block";
+            delall.innerHTML = "delete all " + ` (${lists.length})`
+
+        }
+        else
+            delall.style.display = "none";
+    }
+
+    //count
+
+
+    //delette
+    function effacer(row) {
+
+        alert(row)
+        lists.splice(row, 1)
+        localStorage.product = JSON.stringify(lists)
+        afficherDate()
+
+    }
+
+    //update
+    function modifier(row) {
+
+
+        title.value = lists[row].title;
+        price.value = lists[row].price;
+        taxes.value = lists[row].taxes;
+        ads.value = lists[row].ads;
+        discount.value = lists[row].discount;
+        category.value = lists[row].category;
+        total.innerHTML = lists[row].total;
+        create.innerHTML = "update";
+        count.style.display = "none";
+        etat = "update";
+        temp = row;
+        scroll({
+            top: 0,
+            behavior: "smooth"
+        })
+
+
+    }
+
+
+    //modifier
+
+    //serch
+    function search(v) {
+        if (v == "btn1") {
+            moder = "title";
+            s.placeholder = "Search By Title";
+            s.readOnly=false
+        }
+        if (v == "btn2") {
+            moder = "category";
+            s.readOnly=false
+            s.placeholder = "Search By Category";
+            
+        }
+        s.focus();
+        s.value = "";
+        afficherDate()
+    }
+
+
+    //clean data
+    delall.onclick = function () {
+
+        n = window.confirm("Voulez Vous Vraiment Effacer Toute La Liste?")
+        if (n) {
+            lists.splice(0)
+
+            localStorage.clear()
+            afficherDate()
+        }
+
+    }
+
+    function rechercher(vv) 
+    {
+        let table = ''
+
+        if (moder == 'title') 
+        {
+
+            for (i = 0; i < lists.length; i++) 
+            {
+
+                if (lists[i].title.includes(vv)) 
+                {
+
+                    table += `
+                    <tr>
+                    <td>${i + 1}</td>
+                    <td>${lists[i].title}</td>
+                    <td>${lists[i].price}</td>
+                    <td>${lists[i].taxes}</td>
+                    <td>${lists[i].ads}</td>
+                    <td>${lists[i].discount}</td>
+                    <td>${lists[i].total}</td>
+                    <td>${lists[i].count}</td>
+                    <td>${lists[i].category}</td>
+                    <td><button onclick="modifier(${i})" id="up">Update</button></td>
+                    <td><button onclick="effacer( ${i} )" id="del">Delete</button></td>
+                    </tr>
+                    `
+                }  
+            }
+        }
+        else 
+        {
+            for (i = 0; i < lists.length; i++) 
+            {
+
+                if (lists[i].category.includes(vv)) 
+                {
+
+                    table += `
+                    <tr>
+                    <td>${i + 1}</td>
+                    <td>${lists[i].title}</td>
+                    <td>${lists[i].price}</td>
+                    <td>${lists[i].taxes}</td>
+                    <td>${lists[i].ads}</td>
+                    <td>${lists[i].discount}</td>
+                    <td>${lists[i].total}</td>
+                    <td>${lists[i].count}</td>
+                    <td>${lists[i].category}</td>
+                    <td><button onclick="modifier(${i})" id="up">Update</button></td>
+                    <td><button onclick="effacer( ${i} )" id="del">Delete</button></td>
+                    </tr>
+
+                    `
+                }
+            }
+        }
+        tbody.innerHTML = table
+
+                   
+    }
+</script>
+
+</html>
